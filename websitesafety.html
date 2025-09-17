@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code IP Tracker</title>
+    <title>QR Code IP Tracker for Discord</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <style>
         * {
@@ -227,6 +227,17 @@
                         <input type="url" id="webhook-url" placeholder="https://discord.com/api/webhooks/..." />
                     </div>
                     <button id="generate-btn">Generate QR Code</button>
+                </div>
+                
+                <div class="info-box">
+                    <h3>Vercel Deployment</h3>
+                    <p>This tool works perfectly on Vercel! To deploy:</p>
+                    <ol>
+                        <li>Create a new repository with this HTML file</li>
+                        <li>Connect your GitHub account to Vercel</li>
+                        <li>Import the repository to Vercel</li>
+                        <li>Deploy with zero configuration needed</li>
+                    </ol>
                 </div>
                 
                 <div class="info-box">
